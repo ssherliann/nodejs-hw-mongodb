@@ -7,7 +7,7 @@ import { env } from './utils/env.js';
 
 const PORT = Number(env('PORT', '3000'));
 
-function setupServer() {
+export const setupServer = () => {
     const app = express();
 
     app.use(express.json());
@@ -82,6 +82,4 @@ function setupServer() {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
-}
-
-module.exports = setupServer;
+};
