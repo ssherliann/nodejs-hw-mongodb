@@ -1,33 +1,15 @@
 import { registerUser, loginUser, logoutUser } from "../services/auth.js";
-import { ONE_DAY } from '../constants/index.js';
+import { THIRTY_DAYS } from '../constants/index.js';
 import { refreshUsersSession } from '../services/auth.js';
 
-// export const findUserByEmail = async (email) => {
-//     try {
-//         const user = await User.findOne({ email });
-//         return user;
-//     } catch (error) {
-//         throw new Error('Error finding user by email');
-//     }
-// };
+export const registerUserController = async (req, res) => {
+    const user = await registerUser(req.body);
 
-
-export const registerUserController = async (req, res, next) => {
-    try {
-        const { email } = req.body;
-
-        // const existingUser = await findUserByEmail(email);
-
-        const user = await registerUser(req.body);
-
-        res.json({
-            status: 200,
-            message: 'Successfully registered a user!',
-            data: user,
-        });
-    } catch(error) {   
-        next(error);
-    }
+    res.json({
+        status: 201,
+        message: 'Successfully registered a user!',
+        data: user,
+    });
 };
 
 export const loginUserController = async (req, res) => {
@@ -35,11 +17,11 @@ export const loginUserController = async (req, res) => {
 
     res.cookie('refreshToken', session.refreshToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + ONE_DAY),
+        expires: new Date(Date.now() + THIRTY_DAYS),
     });
     res.cookie('sessionId', session._id, {
         httpOnly: true,
-        expires: new Date(Date.now() + ONE_DAY),
+        expires: new Date(Date.now() + THIRTY_DAYS),
     });
 
     res.json({
@@ -65,11 +47,11 @@ export const logoutUserController = async (req, res) => {
 const setupSession = (res, session) => {
     res.cookie('refreshToken', session.refreshToken, {
         httpOnly: true,
-        expires: new Date(Date.now() + ONE_DAY),
+        expires: new Date(Date.now() + THIRTY_DAYS),
     });
     res.cookie('sessionId', session._id, {
         httpOnly: true,
-        expires: new Date(Date.now() + ONE_DAY),
+        expires: new Date(Date.now() + THIRTY_DAYS),
     });
 };
 
