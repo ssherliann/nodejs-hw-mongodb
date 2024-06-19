@@ -56,18 +56,25 @@ const setupSession = (res, session) => {
 };
 
 export const refreshUserSessionController = async (req, res) => {
-    const session = await refreshUsersSession({
-        sessionId: req.cookies.sessionId,
-        refreshToken: req.cookies.refreshToken,
-    });
+    try {
+        const session = await refreshUsersSession({
+            sessionId: req.cookies.sessionId,
+            refreshToken: req.cookies.refreshToken,
+        });
 
-    setupSession(res, session);
+        setupSession(res, session);
 
-    res.json({
-        status: 200,
-        message: 'Successfully refreshed a session!',
-        data: {
-            accessToken: session.accessToken,
-        },
-    });
+        res.json({
+            status: 200,
+            message: 'Successfully refreshed a session!',
+            data: {
+                accessToken: session.accessToken,
+            },
+        });
+    } catch (error) {
+        res.status(401).json({
+            status: 401,
+            message: error.message,
+        });
+    }
 };

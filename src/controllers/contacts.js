@@ -4,7 +4,7 @@ import { getAllContacts, getContactById, createContact, updateContact, deleteCon
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 
-export const getContactsController = async(req, res, next) => {
+export const getContactsController = async (req, res, next) => {
     try {
         const { _id: userId } = req.user;
         const { page, perPage } = parsePaginationParams(req.query);
@@ -23,73 +23,85 @@ export const getContactsController = async(req, res, next) => {
             message: 'Successfully found contacts!',
             data: contacts,
         });
-    } catch(error) {
+    } catch (error) {
         next(error);
     }
 };
 
-export const getContactByIdController = async(req, res, next) => {
-    const { _id: userId } = req.user;
-    const contactId = req.params.contactId;
+export const getContactByIdController = async (req, res, next) => {
+    try {
+        const { _id: userId } = req.user;
+        const contactId = req.params.contactId;
 
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-        throw new Error('Invalid contact ID');
+        if (!mongoose.Types.ObjectId.isValid(contactId)) {
+            throw new Error('Invalid contact ID');
+        }
+
+        const contact = await getContactById(contactId, userId);
+
+        if (!contact) {
+            next(createHttpError(404, 'Contact not found'));
+            return;
+        }
+
+        res.status(200).json({
+            status: 200,
+            message: `Successfully found contact with id ${contactId}!`,
+            data: contact,
+        });
+    } catch (error) {
+        next(error);
     }
-
-    const contact = await getContactById(contactId, userId);
-
-    if (!contact) {
-        next(createHttpError(404, 'Contact not found'));
-        return;
-    }
-
-    res.status(200).json({
-        status: 200,
-        message: `Successfully found contact with id ${contactId}!`,
-        data: contact,
-    });
 };
 
-export const createContactController = async (req, res) => {
-    const { _id: userId } = req.user;
-    const contact = await createContact({ ...req.body, userId });
+export const createContactController = async (req, res, next) => {
+    try {
+        const { _id: userId } = req.user;
+        const contact = await createContact({ ...req.body, userId });
 
-    res.status(201).json({
-        status: 201,
-        message: `Successfully created a contact!`,
-        data: contact,
-    });
+        res.status(201).json({
+            status: 201,
+            message: `Successfully created a contact!`,
+            data: contact,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 export const patchContactController = async (req, res, next) => {
-    const { _id: userId } = req.user;
-    const { contactId } = req.params;
+    try {
+        const { _id: userId } = req.user;
+        const { contactId } = req.params;
 
-    const result = await updateContact(contactId, userId, req.body);
+        const result = await updateContact(contactId, userId, req.body);
 
-    if (!result) {
-        next(createHttpError(404, 'Contact not found'));
-        return;
+        if (!result) {
+            next(createHttpError(404, 'Contact not found'));
+            return;
+        }
+
+        res.json({
+            status: 200,
+            message: `Successfully patched a contact!`,
+            data: result,
+        });
+    } catch (error) {
+        next(error);
     }
-    
-    res.json({
-        status: 200,
-        message: `Successfully patched a contact!`,
-        data: result,
-    });
 };
 
 export const deleteContactController = async (req, res, next) => {
-    const { _id: userId } = req.user;
-    const { contactId } = req.params;
-
     try {
+        const { _id: userId } = req.user;
+        const { contactId } = req.params;
+
         const contact = await deleteContact(contactId, userId);
 
         if (!contact) {
             return next(createHttpError(404, 'Contact not found'));
         }
-        
+
         res.status(204).send();
     } catch (error) {
         next(createHttpError(500, error.message));
